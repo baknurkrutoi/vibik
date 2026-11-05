@@ -1,0 +1,890 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Мои задачи</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23097969'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' stroke='%23F5ECD7' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --green: #097969;
+    --green-dark: #065A4E;
+    --green-soft: #D3EFEA;
+    --green-mist: #E4F3F0;
+    --bg: #F5ECD7;
+    --card: #FBF6EA;
+    --accent: #E2522B;
+    --accent-hover: #C8431F;
+    --text: #133A35;
+    --muted: #687F7B;
+    --line: rgba(19, 58, 53, 0.12);
+    --line-strong: rgba(19, 58, 53, 0.22);
+
+    --todo-bg: #ECE2CB;
+    --todo-fg: #6B5D40;
+    --progress-bg: #CDEDE7;
+    --progress-fg: #065A4E;
+    --done-bg: #097969;
+    --done-fg: #FFFFFF;
+
+    --study-bg: #F2E3C0;
+    --study-fg: #7A5717;
+
+    --radius: 16px;
+    --radius-sm: 10px;
+    --shadow: 0 1px 2px rgba(19, 58, 53, 0.06), 0 8px 24px -12px rgba(19, 58, 53, 0.25);
+    --font: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Roboto, Arial, sans-serif;
+    --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: var(--bg);
+    background-image:
+      radial-gradient(circle at 12% 0%, rgba(9, 121, 105, 0.07), transparent 40%),
+      radial-gradient(circle at 100% 30%, rgba(226, 82, 43, 0.05), transparent 35%);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  button, input, select { font: inherit; color: inherit; }
+
+  button { cursor: pointer; }
+
+  :focus-visible {
+    outline: 3px solid rgba(9, 121, 105, 0.45);
+    outline-offset: 2px;
+  }
+
+  .visually-hidden {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0);
+    white-space: nowrap; border: 0;
+  }
+
+  /* ---------- Шапка ---------- */
+
+  .hero {
+    background:
+      radial-gradient(120% 140% at 0% 0%, #2BA894 0%, transparent 55%),
+      linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+    color: #F5ECD7;
+    padding: 40px 16px 88px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::after {
+    /* мягкий узор-листва */
+    content: "";
+    position: absolute;
+    right: -60px; top: -40px;
+    width: 280px; height: 280px;
+    border-radius: 50%;
+    border: 36px solid rgba(245, 236, 215, 0.06);
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .date {
+    margin: 0 0 6px;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+
+  h1 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(34px, 6vw, 46px);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+
+  .progress {
+    margin-top: 22px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .progress-track {
+    flex: 1;
+    max-width: 320px;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(245, 236, 215, 0.2);
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    width: 0;
+    border-radius: inherit;
+    background: #F5ECD7;
+    transition: width 0.45s cubic-bezier(.2, .8, .2, 1);
+  }
+
+  .progress-text {
+    font-size: 14px;
+    opacity: 0.9;
+    white-space: nowrap;
+  }
+
+  /* ---------- Основная колонка ---------- */
+
+  main {
+    max-width: 760px;
+    margin: -60px auto 0;
+    padding: 0 16px 48px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  /* ---------- Форма ---------- */
+
+  .add-form {
+    padding: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .input-wrap {
+    flex: 1 1 260px;
+    position: relative;
+  }
+
+  .task-input {
+    width: 100%;
+    height: 48px;
+    padding: 0 16px;
+    border: 1.5px solid var(--line-strong);
+    border-radius: 12px;
+    background: #FFFDF7;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .task-input::placeholder { color: #97A9A5; }
+
+  .task-input:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 4px rgba(9, 121, 105, 0.14);
+  }
+
+  .task-input.invalid {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(226, 82, 43, 0.14);
+    animation: shake 0.35s;
+  }
+
+  .hint {
+    position: absolute;
+    left: 4px;
+    top: calc(100% + 4px);
+    font-size: 13px;
+    color: var(--accent-hover);
+    opacity: 0;
+    transform: translateY(-2px);
+    transition: opacity 0.15s, transform 0.15s;
+    pointer-events: none;
+  }
+
+  .hint.show { opacity: 1; transform: none; }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 12px;
+    flex: 0 0 auto;
+  }
+
+  /* Сегментированный переключатель (тип задачи, фильтр, статус) */
+  .segmented {
+    display: inline-flex;
+    padding: 4px;
+    gap: 2px;
+    background: var(--green-mist);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+
+  .segmented button {
+    border: 0;
+    background: transparent;
+    padding: 0 14px;
+    height: 38px;
+    border-radius: 9px;
+    color: var(--green-dark);
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+    transition: background-color 0.15s, color 0.15s, box-shadow 0.15s;
+  }
+
+  .segmented button:hover { background: rgba(9, 121, 105, 0.09); }
+
+  .segmented button[aria-pressed="true"] {
+    background: var(--green);
+    color: #fff;
+    box-shadow: 0 2px 6px -2px rgba(6, 90, 78, 0.55);
+  }
+
+  .segmented svg { width: 16px; height: 16px; flex: none; }
+
+  .btn-accent {
+    border: 0;
+    height: 46px;
+    padding: 0 22px;
+    border-radius: 12px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px -4px rgba(226, 82, 43, 0.6);
+    transition: background-color 0.15s, transform 0.1s, box-shadow 0.15s;
+  }
+
+  .btn-accent:hover { background: var(--accent-hover); }
+  .btn-accent:active { transform: translateY(1px); box-shadow: 0 2px 6px -3px rgba(226, 82, 43, 0.6); }
+  .btn-accent svg { width: 18px; height: 18px; }
+
+  /* ---------- Фильтр ---------- */
+
+  .toolbar {
+    margin: 28px 0 14px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .toolbar h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--green-dark);
+  }
+
+  .filter button { height: 34px; padding: 0 12px; font-size: 15px; }
+
+  .count {
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 22px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    display: inline-grid;
+    place-items: center;
+    background: rgba(6, 90, 78, 0.1);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .filter button[aria-pressed="true"] .count { background: rgba(255, 255, 255, 0.22); }
+
+  /* ---------- Список задач ---------- */
+
+  .task-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+  }
+
+  .task {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 2px rgba(19, 58, 53, 0.05);
+    padding: 14px 14px 14px 18px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.2s, border-color 0.2s, background-color 0.2s;
+  }
+
+  .task::before {
+    /* цветная полоска статуса слева */
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 5px;
+    background: var(--todo-bg);
+    transition: background-color 0.2s;
+  }
+
+  .task[data-status="in_progress"]::before { background: #65C6B7; }
+  .task[data-status="done"]::before { background: var(--green); }
+
+  .task:hover { box-shadow: var(--shadow); border-color: var(--line-strong); }
+
+  .task-main {
+    flex: 1 1 240px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .task-text {
+    margin: 0;
+    font-size: 16.5px;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+    transition: color 0.2s;
+  }
+
+  .task-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 24px;
+    padding: 0 9px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .badge svg { width: 13px; height: 13px; }
+
+  .badge-work { background: var(--green-soft); color: var(--green-dark); }
+  .badge-study { background: var(--study-bg); color: var(--study-fg); }
+
+  .task-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .status button {
+    height: 32px;
+    padding: 0 11px;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+
+  .status .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.55;
+  }
+
+  .status button[data-value="todo"][aria-pressed="true"] { background: var(--todo-bg); color: var(--todo-fg); box-shadow: none; }
+  .status button[data-value="in_progress"][aria-pressed="true"] { background: var(--progress-bg); color: var(--progress-fg); box-shadow: none; }
+  .status button[data-value="done"][aria-pressed="true"] { background: var(--done-bg); color: var(--done-fg); }
+  .status button[aria-pressed="true"] .dot { opacity: 1; }
+
+  .btn-delete {
+    height: 34px;
+    padding: 0 12px;
+    font-size: 14px;
+    border-radius: 10px;
+    box-shadow: none;
+  }
+
+  .btn-delete svg { width: 16px; height: 16px; }
+
+  /* «Сделано» — приглушённо и зачёркнуто */
+  .task[data-status="done"] { background: #F6F0E0; }
+  .task[data-status="done"] .task-text {
+    color: var(--muted);
+    text-decoration: line-through;
+    text-decoration-color: rgba(6, 90, 78, 0.55);
+    text-decoration-thickness: 2px;
+  }
+  .task[data-status="done"] .badge { opacity: 0.65; }
+
+  /* Анимации появления и удаления */
+  .task.entering { animation: enter 0.32s cubic-bezier(.2, .8, .2, 1); }
+  .task.leaving { animation: leave 0.24s ease forwards; pointer-events: none; }
+
+  @keyframes enter {
+    from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @keyframes leave {
+    to { opacity: 0; transform: translateX(24px); }
+  }
+
+  /* ---------- Пустое состояние ---------- */
+
+  .empty {
+    padding: 44px 20px;
+    text-align: center;
+    color: var(--muted);
+    border: 1.5px dashed var(--line-strong);
+    border-radius: var(--radius);
+    background: rgba(251, 246, 234, 0.6);
+  }
+
+  .empty svg { width: 64px; height: 64px; margin-bottom: 10px; }
+
+  .empty p { margin: 0; }
+
+  .empty .empty-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--green-dark);
+    margin-bottom: 4px;
+  }
+
+  .storage-note {
+    margin: 16px 0 0;
+    font-size: 13px;
+    color: var(--accent-hover);
+    text-align: center;
+  }
+
+  footer {
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+    padding: 0 16px 32px;
+  }
+
+  /* ---------- Телефон ---------- */
+
+  @media (max-width: 560px) {
+    .hero { padding: 28px 16px 80px; }
+    .add-form { padding: 12px; }
+    .form-actions { width: 100%; gap: 8px; }
+    .form-actions .segmented { flex: 1; min-width: 0; }
+    .form-actions .segmented button { flex: 1; min-width: 0; justify-content: center; padding: 0 6px; gap: 5px; }
+    .btn-accent { padding: 0 14px; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+    .filter { display: flex; }
+    .filter button { flex: 1; justify-content: center; padding: 0 6px; }
+    .task { padding: 14px 12px 12px 16px; }
+    .task-controls { width: 100%; flex-wrap: nowrap; gap: 8px; }
+    .status { flex: 1; min-width: 0; }
+    .status button { flex: 1; min-width: 0; justify-content: center; padding: 0 4px; font-size: 13px; }
+    .status button .dot { display: none; }
+    .btn-delete .label { display: none; }
+    .btn-delete { flex: none; width: 40px; height: 40px; padding: 0; justify-content: center; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <p class="date" id="today"></p>
+    <h1>Мои задачи</h1>
+    <div class="progress" aria-live="polite">
+      <div class="progress-track" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div>
+      <span class="progress-text" id="progressText"></span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <form class="card add-form" id="addForm" novalidate autocomplete="off">
+    <div class="input-wrap">
+      <label for="taskInput" class="visually-hidden">Текст задачи</label>
+      <input class="task-input" id="taskInput" type="text" maxlength="200" placeholder="Что нужно сделать?">
+      <span class="hint" id="hint" role="alert"></span>
+    </div>
+    <div class="form-actions">
+      <div class="segmented" role="group" aria-label="Тип задачи" id="typePicker">
+        <button type="button" data-value="work" aria-pressed="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/></svg>
+          Работа
+        </button>
+        <button type="button" data-value="study" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2z"/><path d="M22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z"/></svg>
+          Учёба
+        </button>
+      </div>
+      <button type="submit" class="btn-accent">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Добавить
+      </button>
+    </div>
+  </form>
+
+  <div class="toolbar">
+    <h2>Список</h2>
+    <div class="segmented filter" role="group" aria-label="Фильтр по типу" id="filter">
+      <button type="button" data-value="all" aria-pressed="true">Все <span class="count" data-count="all">0</span></button>
+      <button type="button" data-value="work" aria-pressed="false">Работа <span class="count" data-count="work">0</span></button>
+      <button type="button" data-value="study" aria-pressed="false">Учёба <span class="count" data-count="study">0</span></button>
+    </div>
+  </div>
+
+  <ul class="task-list" id="taskList" aria-live="polite"></ul>
+
+  <div class="empty" id="empty" hidden>
+    <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+      <rect x="12" y="8" width="40" height="50" rx="8" fill="#E4F3F0" stroke="#097969" stroke-width="2.5"/>
+      <rect x="24" y="4" width="16" height="9" rx="3" fill="#FBF6EA" stroke="#097969" stroke-width="2.5"/>
+      <path d="M21 27l4 4 7-8" stroke="#097969" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M36 28h8M21 42h23" stroke="#65C6B7" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    <p class="empty-title" id="emptyTitle">Задач пока нет</p>
+    <p id="emptyText">Добавьте первую выше</p>
+  </div>
+
+  <p class="storage-note" id="storageNote" hidden>Хранилище браузера недоступно: задачи не сохранятся после перезагрузки.</p>
+</main>
+
+<footer>Задачи хранятся только в этом браузере</footer>
+
+<!-- Шаблон строки задачи -->
+<template id="taskTemplate">
+  <li class="task">
+    <div class="task-main">
+      <p class="task-text"></p>
+      <div class="task-meta">
+        <span class="badge"></span>
+        <time class="task-date"></time>
+      </div>
+    </div>
+    <div class="task-controls">
+      <div class="segmented status" role="group" aria-label="Статус задачи">
+        <button type="button" data-value="todo"><span class="dot"></span>Не начата</button>
+        <button type="button" data-value="in_progress"><span class="dot"></span>В работе</button>
+        <button type="button" data-value="done"><span class="dot"></span>Сделано</button>
+      </div>
+      <button type="button" class="btn-accent btn-delete" title="Удалить" aria-label="Удалить задачу">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>
+        <span class="label">Удалить</span>
+      </button>
+    </div>
+  </li>
+</template>
+
+<script>
+(function () {
+  "use strict";
+
+  var STORAGE_KEY = "tasks";
+  var TYPES = { work: "Работа", study: "Учёба" };
+  var STATUSES = ["todo", "in_progress", "done"];
+
+  var ICONS = {
+    work: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+    study: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5h6a4 4 0 0 1 4 4v11a3 3 0 0 0-3-3H2z"/><path d="M22 5h-6a4 4 0 0 0-4 4v11a3 3 0 0 1 3-3h7z"/></svg>'
+  };
+
+  // ---------- Элементы ----------
+  var form = document.getElementById("addForm");
+  var input = document.getElementById("taskInput");
+  var hint = document.getElementById("hint");
+  var typePicker = document.getElementById("typePicker");
+  var filterEl = document.getElementById("filter");
+  var list = document.getElementById("taskList");
+  var empty = document.getElementById("empty");
+  var emptyTitle = document.getElementById("emptyTitle");
+  var emptyText = document.getElementById("emptyText");
+  var storageNote = document.getElementById("storageNote");
+  var template = document.getElementById("taskTemplate");
+  var progressBar = document.getElementById("progressBar");
+  var progressText = document.getElementById("progressText");
+
+  // ---------- Состояние ----------
+  var storageOk = true;
+  var tasks = loadTasks();
+  var currentFilter = "all";
+  var newTaskType = "work";
+  var justAddedId = null;
+
+  // ---------- Хранилище ----------
+  function isValidTask(t) {
+    return t && typeof t.id === "string" && typeof t.text === "string" &&
+      TYPES.hasOwnProperty(t.type) && STATUSES.indexOf(t.status) !== -1;
+  }
+
+  function loadTasks() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      var data = JSON.parse(raw);
+      return Array.isArray(data) ? data.filter(isValidTask) : [];
+    } catch (e) {
+      storageOk = false;
+      return [];
+    }
+  }
+
+  function saveTasks() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    } catch (e) {
+      storageOk = false;
+    }
+    storageNote.hidden = storageOk;
+  }
+
+  // ---------- Помощники ----------
+  function plural(n, one, few, many) {
+    var m10 = n % 10, m100 = n % 100;
+    if (m10 === 1 && m100 !== 11) return one;
+    if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few;
+    return many;
+  }
+
+  function formatDate(ts) {
+    var d = new Date(ts);
+    var now = new Date();
+    var sameDay = d.toDateString() === now.toDateString();
+    var yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1).toDateString() === d.toDateString();
+    var time = d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+    if (sameDay) return "сегодня, " + time;
+    if (yesterday) return "вчера, " + time;
+    return d.toLocaleDateString("ru-RU", { day: "numeric", month: "long" });
+  }
+
+  function setPressed(group, value) {
+    var buttons = group.querySelectorAll("button[data-value]");
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].setAttribute("aria-pressed", String(buttons[i].dataset.value === value));
+    }
+  }
+
+  var hintTimer;
+  function showHint(msg) {
+    hint.textContent = msg;
+    hint.classList.add("show");
+    input.classList.remove("invalid");
+    void input.offsetWidth; // перезапуск анимации
+    input.classList.add("invalid");
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(hideHint, 2200);
+  }
+
+  function hideHint() {
+    hint.classList.remove("show");
+    input.classList.remove("invalid");
+  }
+
+  // ---------- Отрисовка ----------
+  function renderTask(task) {
+    var node = template.content.firstElementChild.cloneNode(true);
+    node.dataset.id = task.id;
+    node.dataset.status = task.status;
+    if (task.id === justAddedId) node.classList.add("entering");
+
+    node.querySelector(".task-text").textContent = task.text;
+
+    var badge = node.querySelector(".badge");
+    badge.className = "badge badge-" + task.type;
+    badge.innerHTML = ICONS[task.type];
+    badge.appendChild(document.createTextNode(TYPES[task.type]));
+
+    var time = node.querySelector(".task-date");
+    if (task.createdAt) {
+      time.textContent = formatDate(task.createdAt);
+      time.dateTime = new Date(task.createdAt).toISOString();
+    }
+
+    setPressed(node.querySelector(".status"), task.status);
+    return node;
+  }
+
+  function render() {
+    var visible = tasks.filter(function (t) {
+      return currentFilter === "all" || t.type === currentFilter;
+    });
+
+    var frag = document.createDocumentFragment();
+    visible.forEach(function (t) { frag.appendChild(renderTask(t)); });
+    list.replaceChildren(frag);
+    justAddedId = null;
+
+    // Пустое состояние
+    empty.hidden = visible.length > 0;
+    if (!visible.length) {
+      if (!tasks.length) {
+        emptyTitle.textContent = "Задач пока нет";
+        emptyText.textContent = "Добавьте первую выше";
+      } else {
+        emptyTitle.textContent = "Здесь пусто";
+        emptyText.textContent = "В категории «" + TYPES[currentFilter] + "» задач нет";
+      }
+    }
+
+    // Счётчики фильтра
+    var counts = { all: tasks.length, work: 0, study: 0 };
+    tasks.forEach(function (t) { counts[t.type]++; });
+    Object.keys(counts).forEach(function (k) {
+      filterEl.querySelector('[data-count="' + k + '"]').textContent = counts[k];
+    });
+
+    // Прогресс
+    var done = tasks.filter(function (t) { return t.status === "done"; }).length;
+    var total = tasks.length;
+    progressBar.style.width = total ? (done / total * 100) + "%" : "0%";
+    if (!total) {
+      progressText.textContent = "Список чист — самое время что-то запланировать";
+    } else if (done === total) {
+      progressText.textContent = "Всё сделано! 🎉";
+    } else {
+      progressText.textContent = "Сделано " + done + " из " + total + " " + plural(total, "задачи", "задач", "задач");
+    }
+
+    storageNote.hidden = storageOk;
+  }
+
+  // ---------- Действия ----------
+  function addTask() {
+    var text = input.value.trim();
+    if (!text) {
+      showHint("Введите текст задачи");
+      input.focus();
+      return;
+    }
+    var now = Date.now();
+    var task = {
+      id: now.toString() + Math.random().toString(36).slice(2, 6),
+      text: text,
+      type: newTaskType,
+      status: "todo",
+      createdAt: now
+    };
+    tasks.unshift(task);
+    justAddedId = task.id;
+    saveTasks();
+
+    // Чтобы новая задача была видна, переключаем фильтр, если он скрывает её тип
+    if (currentFilter !== "all" && currentFilter !== task.type) {
+      currentFilter = "all";
+      setPressed(filterEl, "all");
+    }
+
+    input.value = "";
+    hideHint();
+    render();
+    input.focus();
+  }
+
+  function setStatus(id, status) {
+    var task = tasks.find(function (t) { return t.id === id; });
+    if (!task || task.status === status) return;
+    task.status = status;
+    saveTasks();
+    render();
+  }
+
+  function deleteTask(id, node) {
+    tasks = tasks.filter(function (t) { return t.id !== id; });
+    saveTasks();
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (node && !reduce) {
+      node.classList.add("leaving");
+      setTimeout(render, 220);
+    } else {
+      render();
+    }
+  }
+
+  // ---------- События ----------
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    addTask();
+  });
+
+  input.addEventListener("input", function () {
+    if (input.value.trim()) hideHint();
+  });
+
+  typePicker.addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-value]");
+    if (!btn) return;
+    newTaskType = btn.dataset.value;
+    setPressed(typePicker, newTaskType);
+  });
+
+  filterEl.addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-value]");
+    if (!btn) return;
+    currentFilter = btn.dataset.value;
+    setPressed(filterEl, currentFilter);
+    render();
+  });
+
+  list.addEventListener("click", function (e) {
+    var row = e.target.closest(".task");
+    if (!row) return;
+    var id = row.dataset.id;
+
+    var statusBtn = e.target.closest(".status button[data-value]");
+    if (statusBtn) {
+      setStatus(id, statusBtn.dataset.value);
+      return;
+    }
+    if (e.target.closest(".btn-delete")) {
+      deleteTask(id, row);
+    }
+  });
+
+  // ---------- Старт ----------
+  var today = new Date().toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" });
+  document.getElementById("today").textContent = today;
+
+  render();
+})();
+</script>
+</body>
+</html>
